@@ -21,12 +21,12 @@ population_data_import <- function(
         filter(division_numeric_code == {{division_numeric_code}}) %>% 
         dplyr::filter(mid_year >= first_year) %>%
         dplyr::filter(mid_year <= last_year) %>% 
-        group_by(mid_year)  %>% 
-        summarise(population_count = sum(population_count)) %>% 
-        mutate(is_in_union = is_in_union, 
+        dplyr::group_by(mid_year)  %>% 
+        dplyr::summarise(population_count = sum(population_count)) %>% 
+        dplyr::mutate(is_in_union = is_in_union, 
                division_numeric_code = division_numeric_code, 
                age_range = "15-49") %>% 
-        select(is_in_union, 
+        dplyr::select(is_in_union, 
                division_numeric_code, 
                population_count, 
                age_range, 
@@ -51,12 +51,12 @@ population_data_import <- function(
         filter(division_numeric_code == {{division_numeric_code}}) %>% 
         dplyr::filter(mid_year >= first_year) %>%
         dplyr::filter(mid_year <= last_year) %>% 
-        group_by(mid_year)  %>% 
-        summarise(population_count = sum(population_count)) %>% 
-        mutate(is_in_union = is_in_union, 
+        dplyr::group_by(mid_year)  %>% 
+        dplyr::summarise(population_count = sum(population_count)) %>% 
+        dplyr::mutate(is_in_union = is_in_union, 
                division_numeric_code = division_numeric_code, 
                age_range = "15-49") %>% 
-        select(is_in_union, 
+        dplyr::select(is_in_union, 
                division_numeric_code, 
                population_count, 
                age_range, 
