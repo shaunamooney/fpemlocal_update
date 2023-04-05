@@ -1,0 +1,27 @@
+Package: fpemlocal
+Type: Package
+Title: fpemlocal
+Version: 1.0.2
+Date: 2019-12-24
+Authors@R: c(person("Gregory", "Guranich", email = "gguranic@umass.edu", role = c("aut", "cre")),
+             person("Mark", "Wheldon", email = "wheldon@un.org", role = c("aut")),
+             person("Niamh", "Cahill", email = "Niamh.Cahill@mu.ie", role = c("aut")),
+             person("Leontine", "Alkema", email = "lalkema@umass.edu", role = c("aut")))
+Description: The local implementation of the Family Planning Estimation Model
+License: MIT
+Depends:
+    R2jags,
+    R (>= 2.10)
+Imports:
+    magrittr,
+    dplyr,
+    jsonlite,
+    readr,
+    rlang,
+    purrr,
+    tidyr
+Suggests: knitr, rmarkdown, testthat, ggplot2, grid, gridExtra
+VignetteBuilder: knitr
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.1
