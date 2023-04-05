@@ -9,6 +9,7 @@ fit_fp_csub(
   division_numeric_code,
   first_year = NULL,
   last_year,
+  population_data = NULL,
   surveydata_filepath = NULL,
   service_stats_filepath = NULL,
   subnational = FALSE,

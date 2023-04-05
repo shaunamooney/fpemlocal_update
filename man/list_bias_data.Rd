@@ -4,7 +4,7 @@
 \alias{list_bias_data}
 \title{list_bias_data}
 \usage{
-list_bias_data(core_data)
+list_bias_data(core_data, is_in_union)
 }
 \arguments{
 \item{core_data}{\emph{\sQuote{Data.frame}} The processed data associated with the model run from \code{\link{core_data}}.}

@@ -29,6 +29,8 @@ There are two scenarios. Each scenario has a corresponding procedure.
     \item{1. (Completely missing) all entries missing for a coutnry's SE variable}
     \item{2. (Partially missing) some entries missing for a country's SE variable }
 }
+}
+\details{
 For scenario 1, the imputation is carried out by calculating the maximum of known 
 sampling errors across all other countries and setting the unknown sampling errors 
 equal to the median of these maximums.
