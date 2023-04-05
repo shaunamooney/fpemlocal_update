@@ -21,10 +21,10 @@ list_service_stats <- function(
   se_users = 0.0837
 
   # setting bias terms to 0 for now SM 07022023 - changing to compare bias results - will change back SM 13022023
-  bias_visits = 0.00879
-  bias_clients = 0.00657 
-  bias_facilities = 0.0131 
-  bias_users = 0.0117 
+  bias_visits = 0
+  bias_clients = 0 
+  bias_facilities = 0
+  bias_users = 0
   
   if (!is.null(service_stats_filepath)) {
       if (is.na(first_year_observed)) {
