@@ -2,130 +2,105 @@
 model{
   Y  ~ dnorm(greghack, 1)
   greghack ~ dnorm(1,1)
-  # AR part - modelling epsilon, how much the model deviates from observed
+  # AR part
   for (c in 1:C){
-    for (u in 1:U){ # union loop SM 05052021
-      # AR1 models (ARIMA model) Autoregressive - lagged version (regression at time t-1)
-      eps.P.ct[c, u, t_star] ~ dnorm(0, tau.P.st[u]) # for P t_start is probs in jags.parallel start year - first year+1 in global data
-      eps.R.ct[c, u, t_star] ~ dnorm(0, tau.R.st[u]) # for R
-      eps.Z.ct[c, u, t_star] ~ dnorm(0, tau.Z.st[u]) # for Z - variance tau, 1/variance
-      for (t in (t_star+1):nyears){
-        eps.P.ct[c, u, t] ~ dnorm(rho.P[u]*eps.P.ct[c, u, t-1], tau.P[u]) # rho is like slope of the model, constrained positive
-        eps.R.ct[c, u, t] ~ dnorm(rho.R[u]*eps.R.ct[c, u, t-1], tau.R[u])
-        eps.Z.ct[c, u, t] ~ dnorm(rho.Z[u]*eps.Z.ct[c, u, t-1], tau.Z[u])
-      }
-      for (t in 2:t_star){
-        eps.P.ct[c, u, t-1] ~ dnorm(rho.P[u]*eps.P.ct[c, u, t], tau.P[u])
-        eps.R.ct[c, u, t-1] ~ dnorm(rho.R[u]*eps.R.ct[c, u, t], tau.R[u])
-        eps.Z.ct[c, u, t-1] ~ dnorm(rho.Z[u]*eps.Z.ct[c, u, t], tau.Z[u])
-      }
-    
-        tau.P.st[u] <- tau.P[u]*(1-pow(rho.P[u],2))
-        tau.P[u] <- pow(sigma.P[u], -2)
-        tau.R.st[u] <- tau.R[u]*(1-pow(rho.R[u],2))
-        tau.R[u] <- pow(sigma.R[u], -2)
-        tau.Z.st[u] <- tau.Z[u]*(1-pow(rho.Z[u],2))
-        tau.Z[u] <- pow(sigma.Z[u], -2)
-  
-    } # end union loop SM 05052021
+    # eps.P.ct[c, 1] ~ dnorm(0, tau.P.st) # for P
+    # eps.R.ct[c,1] ~ dnorm(0, tau.R.st) # for R
+    # eps.Z.ct[c,1] ~ dnorm(0, tau.Z.st) # for Z
+    # for (t in 2:nyears){
+    #   eps.P.ct[c, t] ~ dnorm(rho.P*eps.P.ct[c, t-1], tau.P)
+    #   eps.R.ct[c, t] ~ dnorm(rho.R*eps.R.ct[c, t-1], tau.R)
+    #   eps.Z.ct[c, t] ~ dnorm(rho.Z*eps.Z.ct[c, t-1], tau.Z)
+    # }
+    eps.P.ct[c, t_star] ~ dnorm(0, tau.P.st) # for P
+    eps.R.ct[c, t_star] ~ dnorm(0, tau.R.st) # for R
+    eps.Z.ct[c, t_star] ~ dnorm(0, tau.Z.st) # for Z
+    for (t in (t_star+1):nyears){
+      eps.P.ct[c, t] ~ dnorm(rho.P*eps.P.ct[c, t-1], tau.P)
+      eps.R.ct[c, t] ~ dnorm(rho.R*eps.R.ct[c, t-1], tau.R)
+      eps.Z.ct[c, t] ~ dnorm(rho.Z*eps.Z.ct[c, t-1], tau.Z)
+    }
+    for (t in 2:t_star){
+      eps.P.ct[c, t-1] ~ dnorm(rho.P*eps.P.ct[c, t], tau.P)
+      eps.R.ct[c, t-1] ~ dnorm(rho.R*eps.R.ct[c, t], tau.R)
+      eps.Z.ct[c, t-1] ~ dnorm(rho.Z*eps.Z.ct[c, t], tau.Z)
+    }
   }
-  
-  # logistic curves and model for Z - we expect this to start slowly, then gets popular quickly, then plateau
+  tau.P.st <- tau.P*(1-pow(rho.P,2))
+  tau.P <- pow(sigma.P, -2)
+  tau.R.st <- tau.R*(1-pow(rho.R,2))
+  tau.R <- pow(sigma.R, -2)
+  tau.Z.st <- tau.Z*(1-pow(rho.Z,2))
+  tau.Z <- pow(sigma.Z, -2)
+  # logistic curves and model for Z
   for (c in 1:C){
-    for (u in 1:U){ # union loop SM 05052021
-      for (t in 1:nyears){
-        Rmu.ct[c, u, t] <- Romega.c[c, u]*(t - RT.c[c, u]) # Romega is how fast the growth is at growth part - SM 06042021
-        Rstar.ct[c, u, t] <- Rmax.c[c, u]/(1+exp(-Rmu.ct[c, u, t])) # this is the logistic growth curve, Rmax is at what percent do we level off - SM 06042021
-        R.ct[c, u, t] <- 1/(1+exp(-( logit(Rstar.ct[c, u, t]) + eps.R.ct[c, u, t]))) # growth at what time point - SM 06042021
-        logitZstar.ct[c, u, t] <- (unmet.intercept.c[c, u]
-                               + a.unmet[u]
-                               + b.unmet[u] * (P.ct[c, u, t] - pmid.for.unmet[u])
-                               + c.unmet[u] * pow(P.ct[c, u, t] - pmid.for.unmet[u],2)) # this is the quadratic part - SM 06042021
-        Z.ct[c, u, t] <- 1/(1+exp(-(logitZstar.ct[c, u, t] + eps.Z.ct[c, u, t])))
-        #neg.explogitZ.ct[c, u, t] = exp(-logitZ.ct[c, u, t])
-      }
-      for(t in 1:(t_star-1)){
-        ls.ct[c, u, (t_star-t)] <- s.ct[c, u, (t_star-t)+1] - eps.P.ct[c, u, t_star-t] #logit
-        ils.ct[c, u, (t_star-t)] <- 1/(1+exp(-ls.ct[c, u, (t_star-t)])) #inv.logit
-        #Step function; test for x >/= 0
-        I[c, u, (t_star-t)] <- step(ils.ct[c, u, (t_star-t)] - pmax.c[c, u])
-        ###Get P.ct directly in the backward direction
-        #Only need this bit if I=0 i.e., ils.ct<pmax.c
-        zeta.ct[c, u, (t_star-t)] <- (1-I[c, u, (t_star-t)])*(logit(min((1-0.00001),ils.ct[c, u, (t_star-t)]/pmax.c[c, u]))-omega.c[c, u])
-        P.ct[c, u, (t_star-t)]<-(1-I[c, u, (t_star-t)])*(pmax.c[c, u]*(1/(1+exp(-zeta.ct[c, u, (t_star-t)])))) + I[c, u, (t_star-t)]*ils.ct[c, u, (t_star-t)]
-        ###Get logit(P.ct)
-        s.ct[c, u, (t_star-t)] <- logit(P.ct[c, u, (t_star-t)])
-      } # end back extrapolation
-      for(t in (t_star+1):nyears){
-        #Step function; test for x >/= 0
-        I[c, u, t] <- step(P.ct[c, u, t-1] - pmax.c[c, u])
-        #Only need this bit if I=0 i.e., P.ct<pmax.c
-        zeta.ct[c, u, t] <- (1-I[c, u, t])*(logit(min((1-0.000001),P.ct[c, u, t-1]/pmax.c[c, u])) + omega.c[c, u])
-        s.ct[c, u, t] <- logit(I[c, u, t]*(P.ct[c, u, t-1]) + (1-I[c, u, t])*pmax.c[c, u]*(1/(1+exp(-zeta.ct[c, u, t])))) + eps.P.ct[c, u, t-1]
-        P.ct[c, u, t] <- 1/(1 + exp(-s.ct[c, u, t]))
-      }
-    
-      ### add pmax_lower_bound here
-    pmax.c[c, u] <- pmax_lower_bound[u] + (1-pmax_lower_bound[u])/(1+exp(-logitpmax.c[c, u])) # need to add union to these as well
-    logitpmax.c[c, u] ~ dnorm(lp.world[u], 1/(pow(sigma.lpc[u], 2) + pow(sd_lp.world[u], 2)))
-    # lower bound for rmax is 0.5 for married AND unmarried
-    Rmax.c[c, u] <- 0.5 + (1-0.5)/(1+exp(-logitRmax.c[c, u]))
-    logitRmax.c[c, u] ~ dnorm(lr.world[u], 1/(pow(sigma.lrc[u], 2) + pow(sd_lr.world[u], 2)))
-    logitomega.c[c, u] ~ dnorm(w.subreg[u], 1/(pow(sigma.wc[u], 2) + pow(sd_w.subreg[u], 2)))
-    omega.c[c, u] <- 0.01 + (0.5-0.01)/(1+exp(-logitomega.c[c, u]))
-    Romega.c[c, u] <- 0.01 + (0.5-0.01)/(1+exp(-logitRomega.c[c, u]))
-    logitRomega.c[c, u] ~ dnorm(Rw.subreg[u], 1/(pow(sigma.Rwc[u], 2) + pow(sd_Rw.subreg[u], 2)))
-    
-    s.ct[c, u, t_star] <- setlevel.c[c, u]
-    setlevel.c[c, u] ~ dnorm(mean_setlevel[u], 1/(var_setlevel[u] + pow(sd_mean_setlevel[u], 2)))
-    P.ct[c, u, t_star] <- 1/(1+exp(-s.ct[c, u, t_star]))
-    RT.c[c, u] ~ dnorm(RT.subreg[u], 1/(pow(sigma.RTc[u], 2) + pow(sd_RT.subreg[u], 2)))
-    unmet.intercept.c[c, u] ~ dnorm(unmet.subreg[u], 1/(pow(sigma.unmetc[u], 2) + pow(sd_unmet.subreg[u], 2)))
-    } # end union loop SM 24052021
+    for (t in 1:nyears){
+      Rmu.ct[c, t] <- Romega.c[c]*(t - RT.c[c])
+      Rstar.ct[c, t] <- Rmax.c[c]/(1+exp(-Rmu.ct[c, t]))
+      R.ct[c, t] <- 1/(1+exp(-( logit(Rstar.ct[c,t]) + eps.R.ct[c,t])))
+      logitZstar.ct[c,t] <- (unmet.intercept.c[c]
+                             + a.unmet
+                             + b.unmet * (P.ct[c,t] - pmid.for.unmet)
+                             + c.unmet * pow(P.ct[c,t] - pmid.for.unmet,2))
+      Z.ct[c,t] <- 1/(1+exp(-(logitZstar.ct[c,t] + eps.Z.ct[c,t])))
+      #neg.explogitZ.ct[c,t] = exp(-logitZ.ct[c,t])
+    }
+    for(t in 1:(t_star-1)){
+      ls.ct[c,(t_star-t)] <- s.ct[c, (t_star-t)+1] - eps.P.ct[c, t_star-t] #logit
+      ils.ct[c,(t_star-t)] <- 1/(1+exp(-ls.ct[c,(t_star-t)])) #inv.logit
+      #Step function; test for x >/= 0
+      I[c,(t_star-t)] <- step(ils.ct[c,(t_star-t)] - pmax.c[c])
+      ###Get P.ct directly in the backward direction
+      #Only need this bit if I=0 i.e., ils.ct<pmax.c
+      zeta.ct[c,(t_star-t)] <- (1-I[c,(t_star-t)])*(logit(min((1-0.00001),ils.ct[c,(t_star-t)]/pmax.c[c]))-omega.c[c])
+      P.ct[c,(t_star-t)]<-(1-I[c,(t_star-t)])*(pmax.c[c]*(1/(1+exp(-zeta.ct[c,(t_star-t)])))) + I[c,(t_star-t)]*ils.ct[c,(t_star-t)]
+      ###Get logit(P.ct)
+      s.ct[c,(t_star-t)] <- logit(P.ct[c,(t_star-t)])
+    } # end back extrapolation
+    for(t in (t_star+1):nyears){
+      #Step function; test for x >/= 0
+      I[c,t] <- step(P.ct[c,t-1] - pmax.c[c])
+      #Only need this bit if I=0 i.e., P.ct<pmax.c
+      zeta.ct[c,t] <- (1-I[c,t])*(logit(min((1-0.000001),P.ct[c,t-1]/pmax.c[c])) + omega.c[c])
+      s.ct[c,t] <- logit(I[c,t]*(P.ct[c,t-1]) + (1-I[c,t])*pmax.c[c]*(1/(1+exp(-zeta.ct[c,t])))) + eps.P.ct[c,t-1]
+      P.ct[c,t] <- 1/(1 + exp(-s.ct[c,t]))
+    }
+    ### add pmax_lower_bound here
+    pmax.c[c] <- pmax_lower_bound + (1-pmax_lower_bound)/(1+exp(-logitpmax.c[c]))
+    logitpmax.c[c] ~ dnorm(lp.world, 1/(pow(sigma.lpc, 2) + pow(sd_lp.world, 2)))
+# lower bound for rmax is 0.5 for married AND unmarried
+    Rmax.c[c] <- 0.5 + (1-0.5)/(1+exp(-logitRmax.c[c]))
+    logitRmax.c[c] ~ dnorm(lr.world, 1/(pow(sigma.lrc, 2) + pow(sd_lr.world, 2)))
+    logitomega.c[c] ~ dnorm(w.subreg, 1/(pow(sigma.wc, 2) + pow(sd_w.subreg, 2)))
+    omega.c[c] <- 0.01 + (0.5-0.01)/(1+exp(-logitomega.c[c]))
+    Romega.c[c] <- 0.01 + (0.5-0.01)/(1+exp(-logitRomega.c[c]))
+    logitRomega.c[c] ~ dnorm(Rw.subreg, 1/(pow(sigma.Rwc, 2) + pow(sd_Rw.subreg, 2)))
+    s.ct[c,t_star] <- setlevel.c[c]
+    setlevel.c[c] ~ dnorm(mean_setlevel, 1/(var_setlevel + pow(sd_mean_setlevel, 2)))
+    P.ct[c,t_star] <- 1/(1+exp(-s.ct[c,t_star]))
+    RT.c[c] ~ dnorm(RT.subreg, 1/(pow(sigma.RTc, 2) + pow(sd_RT.subreg, 2)))
+    unmet.intercept.c[c] ~ dnorm(unmet.subreg, 1/(pow(sigma.unmetc, 2) + pow(sd_unmet.subreg, 2)))
   } # end country loop
-
+  # tau.lrc <- pow(sigma.lrc,-2)
+  # tau.lpc <- pow(sigma.lpc,-2)
+  # tau.wc <- pow(sigma.wc, -2)
+ # tau.Sc <- pow(sigma.Sc,-2)
+ # tau.higherSc <- pow(sigma.Sc,-2)
+  # tau.Rwc <- pow(sigma.Rwc, -2)
+  # tau.RTc <- pow(sigma.RTc, -2)
+  # tau.unmetc <- pow(sigma.unmetc,-2)
+  #------
   # to export
   for (c in 1:C){
-    for (u in 1:U){
-      for (t in 1:nyears){
-        mod.ct[c, u, t] <- P.ct[c, u, t]*R.ct[c, u, t] # working back to get the proportions of interest from ratios - SM 06042021
-        trad.ct[c, u, t] <- P.ct[c, u, t]*(1-R.ct[c, u, t])
-        unmet.ct[c, u, t] <- (1-P.ct[c, u, t])*Z.ct[c, u, t]
-        logit_mod.ct[c, u, t] <- log(mod.ct[c, u, t]/(1-mod.ct[c, u, t])) # putting on logit scale - SM 06042021
-        logit_trad.ct[c, u, t] <- log(trad.ct[c, u, t]/(1-trad.ct[c, u, t]))
-        logit_unmet.ct[c, u, t] <- log(unmet.ct[c, u, t]/(1-unmet.ct[c, u, t]))
-      }
-    } # end union loop SM 24052021
-  }
-  
-  
-
-    for (t in 1:nyears){ # SM 
-      mod.ct[1, 3, t] <- (mod.ct[1,1,t]*in_union_population_counts[t] + 
-                          mod.ct[1,2,t]*not_in_union_population_counts[t])/
-                          (in_union_population_counts[t] + not_in_union_population_counts[t])
-      
-      trad.ct[1, 3, t] <- (trad.ct[1,1,t]*in_union_population_counts[t] +
-                          trad.ct[1,2,t]*not_in_union_population_counts[t])/
-                           (in_union_population_counts[t] + not_in_union_population_counts[t])
-                           
-      unmet.ct[1, 3, t] <- (unmet.ct[1,1,t]*in_union_population_counts[t] +
-                            unmet.ct[1,2,t]*not_in_union_population_counts[t])/
-                           (in_union_population_counts[t] + not_in_union_population_counts[t])
-      
-      logit_mod.ct[1, 3, t] <- (logit_mod.ct[1,1,t]*in_union_population_counts[t] +
-                                logit_mod.ct[1,2,t]*not_in_union_population_counts[t])/
-                                (in_union_population_counts[t] + not_in_union_population_counts[t])
-                                
-      logit_trad.ct[1, 3, t] <- (logit_trad.ct[1,1,t]*in_union_population_counts[t] +
-                                logit_trad.ct[1,2,t]*not_in_union_population_counts[t])/
-                                (in_union_population_counts[t] + not_in_union_population_counts[t])
-                                
-      logit_unmet.ct[1, 3, t] <- (logit_unmet.ct[1,1,t]*in_union_population_counts[t] +
-                                logit_unmet.ct[1,2,t]*not_in_union_population_counts[t])/
-                                (in_union_population_counts[t] + not_in_union_population_counts[t])
+    for (t in 1:nyears){
+      mod.ct[c,t] <- P.ct[c,t]*R.ct[c,t]
+      trad.ct[c,t] <- P.ct[c,t]*(1-R.ct[c,t])
+      unmet.ct[c,t] <- (1-P.ct[c,t])*Z.ct[c,t]
+      logit_mod.ct[c,t] <- log(mod.ct[c,t]/(1-mod.ct[c,t]))
+      logit_trad.ct[c,t] <- log(trad.ct[c,t]/(1-trad.ct[c,t]))
+      logit_unmet.ct[c,t] <- log(unmet.ct[c,t]/(1-unmet.ct[c,t]))
     }
-  
+  }
   
 
 ####
@@ -134,31 +109,29 @@ model{
 # get_mod_i refers to indices with modern+trad use
    ratios.trad.modern.in[get_mod_i[i],1:2] ~ dmnorm(mu.in[get_mod_i[i], ],InvSigma[i,,]) #T.i[i,,])
    InvSigma[i,1:2,1:2] <- inverse(Sigma[i,1:2,1:2])
-   Sigma[i,1,2] <- cor.trad.modern.i[get_mod_i[i], get_u_i[i]]*sqrt(Sigma[i,1,1]*Sigma[i,2,2])
-   Sigma[i,2,1] <- cor.trad.modern.i[get_mod_i[i], get_u_i[i]]*sqrt(Sigma[i,1,1]*Sigma[i,2,2])
-   Sigma[i,1,1] <- pow(se_log_r_traditional_no_use[get_mod_i[i]], 2) + pow(nonsample.se.trad.i[get_mod_i[i], get_u_i[i]],2) # SM 07062021 not sure if I should have get_u_i in the stuff from list_auxiliary_data
-   Sigma[i,2,2] <- pow(se_log_r_modern_no_use[get_mod_i[i]], 2) + pow(nonsample.se.modern.i[get_mod_i[i], get_u_i[i]],2)
+   Sigma[i,1,2] <- cor.trad.modern.i[get_mod_i[i]]*sqrt(Sigma[i,1,1]*Sigma[i,2,2])
+   Sigma[i,2,1] <- cor.trad.modern.i[get_mod_i[i]]*sqrt(Sigma[i,1,1]*Sigma[i,2,2])
+   Sigma[i,1,1] <- pow(se_log_r_traditional_no_use[get_mod_i[i]], 2) + pow(nonsample.se.trad.i[get_mod_i[i]],2)
+   Sigma[i,2,2] <- pow(se_log_r_modern_no_use[get_mod_i[i]], 2) + pow(nonsample.se.modern.i[get_mod_i[i]],2)
   }
 for (i in 1:n_unmet){
 # get_unmet_i refers to indices with unmet
  logitratio.yunmet.i[get_unmet_i[i]] ~ dnorm(
-   logitratio.yunmet.hat.i[get_unmet_i[i]], 1/(pow(nonsample.se.unmet.i[get_unmet_i[i], get_u_i[i]],2)+ pow(se_log_r_unmet_no_need[get_unmet_i[i]],2)) )
+   logitratio.yunmet.hat.i[get_unmet_i[i]], 1/(pow(nonsample.se.unmet.i[get_unmet_i[i]],2)+ pow(se_log_r_unmet_no_need[get_unmet_i[i]],2)) )
 }
 
 for (k in 1:n_ptot){
-    logit.ptot[get_ptot_i[k]] ~ dnorm(logit.ptothat.i[get_ptot_i[k]], tau.sourcetot[get_u_i[k]]) # SM 13082021 added get_u_i
+    logit.ptot[get_ptot_i[k]] ~ dnorm(logit.ptothat.i[get_ptot_i[k]], tau.sourcetot)
 }
 
-for(u in 1:U){ # SM 13072021 added union loop
-tau.sourcetot[u] <- pow(sigma.sourcetot[u],-2)
-}
+tau.sourcetot <- pow(sigma.sourcetot,-2)
 # end dms for unmet and trad+modern
 # this part refer to union of indices in unmet and modern
 
   for (i in 1:N){
- modern.i[i] <- mod.ct[get_c_i[i], get_u_i[i], get_t_i[i]] # added get_u_i into modern, trad, unmet SM 10052021
- trad.i[i] <- trad.ct[get_c_i[i], get_u_i[i], get_t_i[i]]
- unmet.i[i] <- unmet.ct[get_c_i[i], get_u_i[i], get_t_i[i]]
+ modern.i[i] <- mod.ct[get_c_i[i], get_t_i[i]]
+ trad.i[i] <- trad.ct[get_c_i[i], get_t_i[i]]
+ unmet.i[i] <- unmet.ct[get_c_i[i], get_t_i[i]]
  mu.in[i,1] <- log(max(0.0000001, q.ii[1,i])/none.adj.i[i])
  mu.in[i,2] <- log(max(0.0000001, q.ii[2,i])/none.adj.i[i])
  logitratio.yunmet.hat.i[i] <- logit(max(0.0000001,q.ii[3,i])/none.adj.i[i])
@@ -176,12 +149,12 @@ tau.sourcetot[u] <- pow(sigma.sourcetot[u],-2)
       p.perturb.ii[4,i] <- (1- trad.i[i] - modern.i[i] - unmet.i[i])/sump.i[i]
       ###Biases
       ##Inclusion of folk methods
-      folkbias.i[i] <- step(folk.ind[i]-0.5)*v.folk[get_u_i[i]]* p.perturb.ii[3,i]
+      folkbias.i[i] <- step(folk.ind[i]-0.5)*v.folk* p.perturb.ii[3,i]
       ##Absence of probing
-      micsbias.i[i] <- step(source.MICS.ind[i]-0.5)* v.mics[get_u_i[i]] * p.perturb.ii[1,i]
+      micsbias.i[i] <- step(source.MICS.ind[i]-0.5)* v.mics * p.perturb.ii[1,i]
       ##Sterilization
-      modposbias.i[i] <- step(mpos.ind[i]-0.5)*v.mpos[get_u_i[i]]* p.perturb.ii[4,i]
-      modnegbias.i[i] <- step(mneg.ind[i]-0.5)*v.mneg[get_u_i[i]] * p.perturb.ii[2,i]
+      modposbias.i[i] <- step(mpos.ind[i]-0.5)*v.mpos* p.perturb.ii[4,i]
+      modnegbias.i[i] <- step(mneg.ind[i]-0.5)*v.mneg * p.perturb.ii[2,i]
       ####Perturbed proportions adjusted for biases (1-4)
       q.ii[1,i] <- p.perturb.ii[1,i] - micsbias.i[i] + folkbias.i[i]
       q.ii[2,i] <- p.perturb.ii[2,i] + modposbias.i[i] - modnegbias.i[i]
@@ -209,8 +182,6 @@ tau.sourcetot[u] <- pow(sigma.sourcetot[u],-2)
       * V.negage.12i[2, negage.ind[i]] ##Age group with negative bias
       )
   }
-  
-  
 # add dummy column in case ncol(V) = 1 => V becomes vector!
 V.geo.12i[1,max(geo.ind)+1] <- 0
       V.age.12i[1,max(age.ind)+1] <- 0
@@ -242,17 +213,15 @@ V.geo.12i[1,max(geo.ind)+1] <- 0
         
 for (m in 1:2){
         for (i in 2:ncat.geo){
-        V.geo.12i[m,i] ~ dlnorm(0, tau.geo.m[m,get_u_i[i]]) # adding a lot of u's here - replacing get_u_i
+        V.geo.12i[m,i] ~ dlnorm(0, tau.geo.m[m])
         }
         for (i in 2:ncat.age){
-        V.age.12i[m,i] ~ dlnorm(0, tau.geo.m[m,get_u_i[i]])
+        V.age.12i[m,i] ~ dlnorm(0, tau.geo.m[m])
         }
-        for (u in 1:U){ # SM 13072021 added union loop
-        tau.geo.m[m,u] <- pow(sigma.geo.m[m,u], -2) # CHECK NOT SURE
-        }
+        tau.geo.m[m] <- pow(sigma.geo.m[m], -2)
         }
         for (i in 2:ncat.sa){
-        V.sa.12i[1,i] ~ dlnorm(0, tau.geo.m[1,get_u_i[i]])
+        V.sa.12i[1,i] ~ dlnorm(0, tau.geo.m[1])
         }
         V.sa.12i[2,1] <- 1
         V.posbias.12i[1,1] <- 1
@@ -263,61 +232,49 @@ for (m in 1:2){
         V.negage.12i[2,1] <- 1
         # m = 2:
         for (i in 2:ncat.sa){
-        W.sa.12i[2,i] ~ dlnorm(mu.pos.m[2,get_u_i[i]], tau.pos[get_u_i[i]])
+        W.sa.12i[2,i] ~ dlnorm(mu.pos.m[2], tau.pos)
         V.sa.12i[2,i] <- 1+W.sa.12i[2,i]
         }
         for (i in 2:ncat.posbias){
-        W.posbias.12i[2,i] ~ dlnorm(mu.pos.m[2, get_u_i[i]], tau.pos[get_u_i[i]])
+        W.posbias.12i[2,i] ~ dlnorm(mu.pos.m[2], tau.pos)
         V.posbias.12i[2,i] <- 1+W.posbias.12i[2,i]
         }
         for (i in 2:ncat.posage){
-        W.posage.12i[2,i] ~ dlnorm(mu.pos.m[2, get_u_i[i]], tau.pos[get_u_i[i]])
+        W.posage.12i[2,i] ~ dlnorm(mu.pos.m[2], tau.pos)
         V.posage.12i[2,i] <-1+W.posage.12i[2,i]
         }
         for (i in 2:ncat.negage){
-        W.negage.12i[2,i] ~ dlnorm(mu.pos.m[2, get_u_i[i]], tau.pos[get_u_i[i]])
+        W.negage.12i[2,i] ~ dlnorm(mu.pos.m[2], tau.pos)
         V.negage.12i[2,i] <- 1/(1+W.negage.12i[2,i])
         }
-        
-        for(u in 1:U){ # SM 13072021 union loop
-        tau.pos[u] <- pow(sigma.pos[u], -2)
-        }
-        
+        tau.pos <- pow(sigma.pos, -2)
         # m=1
         # note: could simplify code and throw out these V's
         for (i in 2:ncat.posbias){
-        V.posbias.12i[1,i] <- 1+exp(mu.pos.m[1,get_u_i[i]])
+        V.posbias.12i[1,i] <- 1+exp(mu.pos.m[1])
         }
         for (i in 2:ncat.posage){
-        V.posage.12i[1,i] <- 1+exp(mu.pos.m[1,get_u_i[i]])
+        V.posage.12i[1,i] <- 1+exp(mu.pos.m[1])
         }
         for (i in 2:ncat.negage){
-        V.negage.12i[1,i] <- 1/(1+exp(mu.pos.m[1,get_u_i[i]]))
+        V.negage.12i[1,i] <- 1/(1+exp(mu.pos.m[1]))
+        }
+  
+
+        for(k in 1:n.training.modonly) {
+            logit.ymodonly.i[geti.training.modonly.k[k]] ~ dnorm(logit(q.ii[2,geti.training.modonly.k[k]]), tau.sourcemodonly)
         }
         
 
+        for (m in 1:2){
+        for (i in 2:ncat.emal){
+        V.emal.12i[m,i] ~ dlnorm(0, tau.geo.m[m])
+        }
+        for (i in 2:ncat.hw){
+        V.hw.12i[m,i] ~ dlnorm(0, tau.geo.m[m])
+        }
+        }
   
-
-  ## m = 1
-  for (i in 2:ncat.emal){
-    V.emal.12i[1,i] <- 1/(1+exp(mu.pos.m[1, get_u_i[i]]))
-  }
   
-  ## m = 2
-  for (i in 2:ncat.emal){
-    W.emal.12i[2,i] ~ dlnorm(mu.pos.m[2, get_u_i[i]], tau.pos[get_u_i[i]])
-    V.emal.12i[2,i] <- 1/(1+W.emal.12i[2,i])
-  }
-  
-  ## m = 1
-  for (i in 2:ncat.hw){
-    V.hw.12i[1,i] <- 1+exp(mu.pos.m[1, get_u_i[i]])
-  }
-  
-  ## m = 2
-  for (i in 2:ncat.hw){
-    W.hw.12i[2,i] ~ dlnorm(mu.pos.m[2, get_u_i[i]], tau.pos[get_u_i[i]])
-    V.hw.12i[2,i] <- 1+W.hw.12i[2,i]
-  }
   
 } # end model
