@@ -199,12 +199,12 @@ impute_user_se <- function(user_data, subnational, is_in_union) {
   )
   # if (subnational) { # is there a difference for subnational runs?
   if (is_in_union %in% c("Y","N")){
-    imputed_max_se <- imputed_data$medians %>%
+    imputed_max_se <- fpemlocal::imputed_data$medians %>%
       dplyr::filter(is_in_union == !!is_in_union) # SM 02032022 causing issues for ALL
   }
   
   else {
-    imputed_max_se <- imputed_data$medians
+    imputed_max_se <- fpemlocal::imputed_data$medians
   }
   # might need a vars_names for this if statement
   # if (all(!(vars %in% colnames(user_data)))) {
