@@ -190,7 +190,7 @@ fit_fp_csub <- function(
     is_in_union = is_in_union
   )
   
-  mod <- jags.parallel(
+  mod <- R2jags::jags.parallel(
     data = c(list_auxiliary, list_global, list_bias, list_service_stats, 
              list_union, list_population, Y = 1), # SM 06102021
     parameters.to.save = params_to_save,
