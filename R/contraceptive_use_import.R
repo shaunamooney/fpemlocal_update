@@ -5,7 +5,7 @@ contraceptive_use_import <- function(is_in_union, surveydata_filepath, division_
   if (!is.null(surveydata_filepath)) {
 
     contraceptive_use <- readr::read_csv(surveydata_filepath)
-    format_check(contraceptive_use_format, contraceptive_use)
+    format_check(fpemlocal::contraceptive_use_format, contraceptive_use)
     
     if (is_in_union %in% c("Y","N")){ # SM 13082021
       contraceptive_use <- contraceptive_use %>%
