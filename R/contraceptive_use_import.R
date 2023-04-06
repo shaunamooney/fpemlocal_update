@@ -20,8 +20,7 @@ contraceptive_use_import <- function(is_in_union, surveydata_filepath, division_
   } else {
     
     if (is_in_union %in% c("Y","N")){ # SM 13082021
-      contraceptive_use <- fpemlocal::contraceptive_use %>%
-        dplyr::filter(is_in_union == !!is_in_union)
+      contraceptive_use <- fpemlocal::contraceptive_use %>% dplyr::filter(is_in_union == !!is_in_union)
     }
     contraceptive_use <- fpemlocal::contraceptive_use %>%
       dplyr::filter(age_range == "15-49")  %>%

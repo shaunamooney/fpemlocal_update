@@ -68,6 +68,7 @@ population_data_import <- function(
         dplyr::filter(mid_year <= last_year)
     }
   }
+  
   return(population_data)
 }
 
