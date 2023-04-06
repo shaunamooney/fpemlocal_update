@@ -18,10 +18,8 @@ population_data_import <- function(
     if(is_in_union == "ALL") { # SM 22062022
       
       population_data <- population_data %>% 
-        filter(division_numeric_code == {{division_numeric_code}}) %>% 
-        dplyr::filter(mid_year >= first_year) %>%
-        dplyr::filter(mid_year <= last_year) %>% 
-        dplyr::group_by(mid_year)  %>% 
+        dplyr::filter(division_numeric_code == {{division_numeric_code}}, mid_year >= first_year, mid_year <= last_year) %>% 
+        dplyr::group_by(mid_year) %>% 
         dplyr::summarise(population_count = sum(population_count)) %>% 
         dplyr::mutate(is_in_union = is_in_union, 
                division_numeric_code = division_numeric_code, 
@@ -48,10 +46,7 @@ population_data_import <- function(
     if(is_in_union == "ALL") { # SM 22062022
      
        population_data <- fpemlocal::population_counts %>% 
-        filter(division_numeric_code == {{division_numeric_code}}) %>%
-        dplyr::group_by(is_in_union) %>% 
-        dplyr::filter(mid_year >= first_year) %>%
-        dplyr::filter(mid_year <= last_year) %>% 
+         dplyr::filter(division_numeric_code == {{division_numeric_code}}, mid_year >= first_year, mid_year <= last_year) %>%  
         dplyr::group_by(mid_year)  %>% 
         dplyr::summarise(population_count = sum(population_count)) %>% 
         dplyr::mutate(is_in_union = is_in_union, 

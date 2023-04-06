@@ -189,7 +189,7 @@ fit_fp_csub <- function(
     nulldata = nrow(core_data$observations) == 0,
     is_in_union = is_in_union
   )
-  
+
   mod <- R2jags::jags.parallel(
     data = c(list_auxiliary, list_global, list_bias, list_service_stats, 
              list_union, list_population, Y = 1), # SM 06102021
