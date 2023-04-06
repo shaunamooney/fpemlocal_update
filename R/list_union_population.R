@@ -5,7 +5,7 @@
 list_union_population <- function(core_data, population_data){
   
   if (is.null(population_data)) {
-    population_data <- population_counts
+    population_data <- fpemlocal::population_counts
   }
 
   division_numeric_code <- core_data$units$division_numeric_code
