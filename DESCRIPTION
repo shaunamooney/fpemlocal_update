@@ -18,7 +18,9 @@ Imports:
     jsonlite,
     readr,
     rlang,
-    purrr
+    purrr,
+    MCMCvis,
+    ggnewscale
 Suggests: knitr, rmarkdown, testthat, ggplot2, grid, gridExtra
 VignetteBuilder: knitr
 Encoding: UTF-8
