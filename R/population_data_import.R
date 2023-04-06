@@ -48,7 +48,8 @@ population_data_import <- function(
     if(is_in_union == "ALL") { # SM 22062022
      
        population_data <- fpemlocal::population_counts %>% 
-        filter(division_numeric_code == division_numeric_code) %>% 
+        filter(division_numeric_code == {{division_numeric_code}}) %>% 
+        dplyr::as_tibble() %>% 
         dplyr::filter(mid_year >= first_year) %>%
         dplyr::filter(mid_year <= last_year) %>% 
         dplyr::group_by(mid_year)  %>% 
