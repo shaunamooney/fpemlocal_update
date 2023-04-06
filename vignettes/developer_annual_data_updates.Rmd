@@ -181,7 +181,7 @@ usethis::use_data(index_m, index_u,
 #fp2020 countries
 ```{r}
 temp <- read.csv(here::here("data-raw/legacy.csv"))
-fp2020 <- temp %>% filter(FP2020.country == "Yes") %>% select(division_numeric_code)
+fp2020 <- temp %>% filter(FP2020.country == "Yes") %>% dplyr::select(division_numeric_code)
 usethis::use_data(fp2020, overwrite = TRUE)
 ```
 
