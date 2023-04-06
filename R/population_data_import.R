@@ -3,7 +3,7 @@ population_data_import <- function(
   fit
 ) 
 {
-  is_in_union <- fit$core_data$observations$is_in_union %>% unique()# SM 20062022
+  is_in_union <- fit$core_data$observations$is_in_union %>% unique() # SM 20062022
   ifelse(!purrr::is_empty(is_in_union), is_in_union <- is_in_union, is_in_union <- "ALL")
   division_numeric_code <- fit %>% purrr::chuck("core_data", "units", "division_numeric_code")
   first_year <- fit %>% 
@@ -47,9 +47,8 @@ population_data_import <- function(
     
     if(is_in_union == "ALL") { # SM 22062022
      
-       population_data <- fpemlocal::population_counts %>% 
-        filter(division_numeric_code == {{division_numeric_code}}) %>% 
-        dplyr::as_tibble() %>% 
+       population_data <- as.dataframe(fpemlocal::population_counts) %>% 
+        filter(division_numeric_code == {{division_numeric_code}}) %>%
         dplyr::filter(mid_year >= first_year) %>%
         dplyr::filter(mid_year <= last_year) %>% 
         dplyr::group_by(mid_year)  %>% 
