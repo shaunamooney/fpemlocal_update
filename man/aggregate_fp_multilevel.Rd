@@ -27,8 +27,8 @@ population_data <- population_counts \%>\%
   dplyr::filter(mid_year <= last_year) \%>\%
   dplyr::filter(mid_year >= first_year)
 division_level_data <- divisions \%>\%
-  mutate(division_level = region_numeric_code)\%>\%
-  select(division_numeric_code, division_level)
+  dplyr::mutate(division_level = region_numeric_code)\%>\%
+  dplyr::select(division_numeric_code, division_level)
 posterior_samples_list <- weight_samples(division_level_data, population_data, posterior_samples)
 
 }
