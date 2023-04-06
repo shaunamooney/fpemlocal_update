@@ -38,7 +38,7 @@ list_service_stats <- function(
       # }
     
     #browser()
-    format_check(service_stats_format, ss)
+    format_check(fpemlocal::service_stats_format, ss)
     ss <- ss %>% dplyr::arrange(year)
     ss <- ss %>%
       dplyr::filter(division_numeric_code == !! division_numeric_code) %>%
