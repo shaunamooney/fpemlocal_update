@@ -1,0 +1,16 @@
+#usethis::use_testthat()
+#usethis::use_test()
+usethis::use_package("purrr")
+#devtools::document()
+#devtools::load_all()
+#devtools::check()
+#devtools::build()
+
+devtools::document()
+
+setwd("~/Documents/GitHub/fpemlocal_aw_ss/fpemlocal_original")
+devtools::document()
+
+
+setwd("~/Documents/GitHub/fpemlocal_aw_ss/fpemlocal_update")
+devtools::document()
