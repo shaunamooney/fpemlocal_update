@@ -58,7 +58,7 @@ aggregate_fp_sub <- function(posterior_samples, weight_df) {
 #' @export
 #'
 #' @examples dimnames(posterior_samples) <- list(division_numeric_code, NULL, NULL, NULL) #provide corresponding division numeric codes in posterior_samples attributes
-#' population_data <- population_counts %>%
+#' population_data <- dplyr::population_counts %>%
 #'   dplyr::filter(is_in_union == union) %>%
 #'   dplyr::filter(mid_year <= last_year) %>%
 #'   dplyr::filter(mid_year >= first_year)
