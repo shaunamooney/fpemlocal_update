@@ -47,7 +47,7 @@ population_data_import <- function(
     
     if(is_in_union == "ALL") { # SM 22062022
      
-       population_data <- population_counts %>% 
+       population_data <- fpemlocal::population_counts %>% 
         filter(division_numeric_code == {{division_numeric_code}}) %>% 
         dplyr::filter(mid_year >= first_year) %>%
         dplyr::filter(mid_year <= last_year) %>% 
@@ -65,7 +65,7 @@ population_data_import <- function(
     
     else {
       
-      population_data <- population_counts %>%
+      population_data <- fpemlocal::population_counts %>%
         dplyr::filter(is_in_union == {{is_in_union}}) %>% 
         dplyr::filter(division_numeric_code == {{division_numeric_code}}) %>%
         dplyr::filter(mid_year >= first_year) %>%
