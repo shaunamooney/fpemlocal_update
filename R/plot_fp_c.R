@@ -71,8 +71,6 @@ plot_fp_csub <- function(
       dplyr::mutate_at(.vars = indicators, .funs = as.numeric)
   }
 
-  # browser()
-  
   # SM 22022022
   union_status <- ifelse(is.na(fit$core_data$observations$is_in_union[1]), "ALL", fit$core_data$observations$is_in_union[1])
 
