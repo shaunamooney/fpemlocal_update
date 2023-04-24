@@ -1,5 +1,6 @@
 Updated version of fpemlocal (https://github.com/AlkemaLab/fpemlocal)
 
+This version uses service statistics to inform all women modern contraceptive prevalence estimates. This version also allows for the use of multiple service statistics types.
 
 
 fpemlocal
