@@ -14,7 +14,11 @@ list_service_stats(
 \arguments{
 \item{service_stats_filepath}{File path to service stat csv}
 
-\item{model_seq_years}{Years of model estimation from\code{\link{year_sequence_maker}}.}
+\item{model_seq_years}{Years of model estimation from\code{\link{year_sequence_maker}}.
+
+run for most recent emu database
+check that this is done by observation not by database type - look at diff countries
+is it just when you use more do they have more impact - check for multiple countries}
 
 \item{division_numeric_code}{\emph{\sQuote{Numeric}} A number associated with the country. See the data from \code{\link{divisions}}.}
 }
