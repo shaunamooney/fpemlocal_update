@@ -410,7 +410,7 @@ if (include_ss_data) {
       for (k in 1:K) {
       # delta emu           delta p's (no added bias term yet)
         ss_delta_k[k] ~ dnorm(ss_delta_modern_k[k], ss_tau_k[k])
-        ss_delta_modern_k[k] <- mod.ct[1, 3, get_t_k[k+1]] - mod.ct[1, 3, get_t_k[k]] 
+        ss_delta_modern_k[k] <- mod.ct[1, pop_index, get_t_k[k+1]] - mod.ct[1, pop_index, get_t_k[k]] 
         ss_tau_k[k] <- pow(ss_se_k[k], -2) # standard dev for each group
 }
 ",sep="",append=TRUE, file = "model.txt", fill = TRUE)

@@ -22,6 +22,7 @@ list_service_stats <- function(
   se_clients = 0.0354 
   se_facilities = 0.0568
   se_users = 0.0835
+
   
   if (!is.null(service_stats_filepath)) {
     if (is.na(first_year_observed)) {
@@ -70,13 +71,23 @@ list_service_stats <- function(
       stop("No available service stats after filtering. Service stats were filtered based on division numeric code.")
     }
     
+    pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
+    
+    if(pop_type == "Y"){
+      pop_index <- 1
+    } else{
+      pop_index <- 3
+    }
+    
     k_index <- ss$ss_delta %>% is.na %>% `!` %>% which
     list_ss_data <- list(K = k_index %>% length,
                          get_t_k = match(x = floor(ss$year),model_seq_years), # k+1 years and k differences
                          ss_delta_k = ss$ss_delta[k_index],
-                         ss_se_k = ss$ss_se[k_index])
+                         ss_se_k = ss$ss_se[k_index],
+                         pop_index = pop_index)
   } else {
     list_ss_data <- NULL
   }
+  
   return(list_ss_data)
 }

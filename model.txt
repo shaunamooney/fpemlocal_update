@@ -100,6 +100,34 @@ model{
   
   
 
+    for (t in 1:nyears){ # SM 
+      mod.ct[1, 3, t] <- (mod.ct[1,1,t]*in_union_population_counts[t] + 
+                          mod.ct[1,2,t]*not_in_union_population_counts[t])/
+                          (in_union_population_counts[t] + not_in_union_population_counts[t])
+      
+      trad.ct[1, 3, t] <- (trad.ct[1,1,t]*in_union_population_counts[t] +
+                          trad.ct[1,2,t]*not_in_union_population_counts[t])/
+                           (in_union_population_counts[t] + not_in_union_population_counts[t])
+                           
+      unmet.ct[1, 3, t] <- (unmet.ct[1,1,t]*in_union_population_counts[t] +
+                            unmet.ct[1,2,t]*not_in_union_population_counts[t])/
+                           (in_union_population_counts[t] + not_in_union_population_counts[t])
+      
+      logit_mod.ct[1, 3, t] <- (logit_mod.ct[1,1,t]*in_union_population_counts[t] +
+                                logit_mod.ct[1,2,t]*not_in_union_population_counts[t])/
+                                (in_union_population_counts[t] + not_in_union_population_counts[t])
+                                
+      logit_trad.ct[1, 3, t] <- (logit_trad.ct[1,1,t]*in_union_population_counts[t] +
+                                logit_trad.ct[1,2,t]*not_in_union_population_counts[t])/
+                                (in_union_population_counts[t] + not_in_union_population_counts[t])
+                                
+      logit_unmet.ct[1, 3, t] <- (logit_unmet.ct[1,1,t]*in_union_population_counts[t] +
+                                logit_unmet.ct[1,2,t]*not_in_union_population_counts[t])/
+                                (in_union_population_counts[t] + not_in_union_population_counts[t])
+    }
+  
+  
+
 ####
 # dms
   for (i in 1:n_mod){
@@ -273,23 +301,37 @@ for (m in 1:2){
         
 
   
-for(u in 1:U){
-        for(k in 1:n.training.modonly) {
-            logit.ymodonly.i[geti.training.modonly.k[k]] ~ dnorm(logit(q.ii[2,geti.training.modonly.k[k]]), tau.sourcemodonly[u])
-        }
-  }
-        
 
-        for(u in 1:U){
-        for (m in 1:2){
-        for (i in 2:ncat.emal[u]){
-        V.emal.12i[m,i,u] ~ dlnorm(0, tau.geo.m[m,u])
-        }
-        for (i in 2:ncat.hw[u]){
-        V.hw.12i[m,i,u] ~ dlnorm(0, tau.geo.m[m,u])
-        }
-        }
-        }
+  ## m = 1
+  for(u in 1:U){
+  for (i in 2:ncat.emal[u]){
+    V.emal.12i[1,i,u] <- 1/(1+exp(mu.pos.m[1,u]))
+  }
   
+  ## m = 2
+  for (i in 2:ncat.emal[u]){
+    W.emal.12i[2,i,u] ~ dlnorm(mu.pos.m[2, u], tau.pos[u])
+    V.emal.12i[2,i,u] <- 1/(1+W.emal.12i[2,i,u])
+  }
   
+  ## m = 1
+  for (i in 2:ncat.hw[u]){
+    V.hw.12i[1,i,u] <- 1+exp(mu.pos.m[1,u])
+  }
+  
+  ## m = 2
+  for (i in 2:ncat.hw[u]){
+    W.hw.12i[2,i,u] ~ dlnorm(mu.pos.m[2,u], tau.pos[u])
+    V.hw.12i[2,i,u] <- 1+W.hw.12i[2,i,u]
+  }
+  }
+  
+
+      for (k in 1:K) {
+      # delta emu           delta p's (no added bias term yet)
+        ss_delta_k[k] ~ dnorm(ss_delta_modern_k[k], ss_tau_k[k])
+        ss_delta_modern_k[k] <- mod.ct[1, pop_index, get_t_k[k+1]] - mod.ct[1, pop_index, get_t_k[k]] 
+        ss_tau_k[k] <- pow(ss_se_k[k], -2) # standard dev for each group
+}
+
 } # end model
