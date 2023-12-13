@@ -18,10 +18,10 @@ list_service_stats <- function(
   
 {
   # ******2021 database AW source specific standard error term*****************
-  se_visits = 0.0373
-  se_clients = 0.0354 
-  se_facilities = 0.0568
-  se_users = 0.0835
+  #se_visits = 0.0373
+  #se_clients = 0.0354 
+  #se_facilities = 0.0568
+  #se_users = 0.0835
 
   
   if (!is.null(service_stats_filepath)) {
@@ -56,12 +56,12 @@ list_service_stats <- function(
         dplyr::mutate(ss_year_lag = year) 
     }
     
-    if (!("se" %in% names(ss))) {
-      ss <- ss %>%
-        dplyr::mutate(ss_se = ifelse(ss_type == "visits", se_visits,
-                                     ifelse(ss_type == "clients", se_clients,
-                                            ifelse(ss_type == "facilities", se_facilities,  se_users))))
-    }
+    #if (!("se" %in% names(ss))) {
+     # ss <- ss %>%
+    #    dplyr::mutate(ss_se = ifelse(ss_type == "visits", se_visits,
+    #                                 ifelse(ss_type == "clients", se_clients,
+   #                                         ifelse(ss_type == "facilities", se_facilities,  se_users))))
+    #}
     
     else {
       ss <- ss %>%
@@ -74,9 +74,9 @@ list_service_stats <- function(
     pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
     
     if(pop_type == "Y"){
-      pop_index <- 1
+      pop_index <- 1 # inform married women mcpr
     } else{
-      pop_index <- 3
+      pop_index <- 3 # inform all women mcpr
     }
     
     k_index <- ss$ss_delta %>% is.na %>% `!` %>% which
