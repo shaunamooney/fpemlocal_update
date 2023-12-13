@@ -412,7 +412,8 @@ if (include_ss_data) {
         ss_delta_k[k] ~ dnorm(ss_delta_modern_k[k], ss_tau_k[k])
         ss_delta_modern_k[k] <- mod.ct[1, pop_index, get_t_k[k+1]] - mod.ct[1, pop_index, get_t_k[k]] 
         ss_tau_k[k] <- pow(ss_se_k[k], -2) # standard dev for each group
-}
+      }
+
 ",sep="",append=TRUE, file = "model.txt", fill = TRUE)
 }
 cat("} # end model",sep="",append=TRUE, file = "model.txt", fill = TRUE)

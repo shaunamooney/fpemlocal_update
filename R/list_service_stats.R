@@ -63,10 +63,10 @@ list_service_stats <- function(
    #                                         ifelse(ss_type == "facilities", se_facilities,  se_users))))
     #}
     
-    else {
+    #else {
       ss <- ss %>%
         dplyr::mutate(ss_se = se)
-    }
+   # }
     if (nrow(ss) == 0) {
       stop("No available service stats after filtering. Service stats were filtered based on division numeric code.")
     }
