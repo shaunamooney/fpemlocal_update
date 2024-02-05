@@ -21,7 +21,6 @@ list_service_stats <- function(
   ss <- readr::read_csv(service_stats_filepath)
   format_check(fpemlocal::service_stats_format, ss)
   
-  
   ss <- ss %>%
     dplyr::arrange(year) %>%
     dplyr::filter(division_numeric_code == !! division_numeric_code) %>%
@@ -60,7 +59,7 @@ list_service_stats <- function(
       stop("Multiple population types found. Unable to determine pop_index.")
     }
     
-    pop_index <- ifelse(pop_type == "Y", 1, 3) # informing married women or all women mcpr
+    pop_index <- ifelse(pop_type == "MW", 1, 3) # informing married women or all women mcpr
     
     k_index <- ss$ss_delta %>% is.na %>% `!` %>% which
     
@@ -69,9 +68,6 @@ list_service_stats <- function(
                          ss_delta_k = ss$ss_delta[k_index],
                          ss_se_k = ss$ss_se[k_index],
                          pop_index = pop_index)
-  } else {
-    list_ss_data <- NULL
-  }
   
   return(list_ss_data)
 }
