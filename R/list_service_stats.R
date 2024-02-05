@@ -27,6 +27,12 @@ list_service_stats <- function(
     dplyr::filter(division_numeric_code == !! division_numeric_code) %>%
     dplyr::filter(year >= first_year_observed) %>%
     dplyr::group_by(ss_type)
+  
+  all_years <- seq(min(ss$year, na.rm = TRUE), max(ss$year, na.rm = TRUE))
+  
+  ss <- ss %>%
+    dplyr::group_by(ss_type) %>%
+    tidyr::complete(year = all_years)
     
     if(!("delta_emu" %in% names(ss))){
       ss <- ss %>%
