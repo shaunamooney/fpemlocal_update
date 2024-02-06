@@ -20,6 +20,7 @@ list_service_stats <- function(
   
   ss <- readr::read_csv(service_stats_filepath)
   format_check(fpemlocal::service_stats_format, ss)
+  pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
   
   ss <- ss %>%
     dplyr::arrange(year) %>%
@@ -53,7 +54,7 @@ list_service_stats <- function(
       stop("No available service stats after filtering. Service stats were filtered based on division numeric code.")
     }
     
-    pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
+    
     
     if (length(pop_type) > 1) {
       stop("Multiple population types found. Unable to determine pop_index.")
