@@ -17,7 +17,7 @@ list_service_stats <- function(
   if (is.null(service_stats_filepath)) {
     return(NULL)
   }
-  
+  browser()
   ss <- readr::read_csv(service_stats_filepath)
   format_check(fpemlocal::service_stats_format, ss)
   pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
