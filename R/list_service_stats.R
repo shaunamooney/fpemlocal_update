@@ -17,17 +17,17 @@ list_service_stats <- function(
   if (is.null(service_stats_filepath)) {
     return(NULL)
   }
-  browser()
+
   ss <- readr::read_csv(service_stats_filepath)
   format_check(fpemlocal::service_stats_format, ss)
-  pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
+  
   
   ss <- ss %>%
     dplyr::arrange(year) %>%
     dplyr::filter(division_numeric_code == !! division_numeric_code) %>%
     dplyr::filter(year >= first_year_observed) %>%
     dplyr::group_by(ss_type)
-  
+  pop_type <- ss %>% dplyr::pull(pop_type) %>% unique()
   all_years <- seq(min(ss$year, na.rm = TRUE), max(ss$year, na.rm = TRUE))
   
   ss <- ss %>%
